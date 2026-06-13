@@ -24,4 +24,3 @@ dist-ssr
 *.sw?
 server/database.sqlite
 server/database.sqlite.backup
-server/
