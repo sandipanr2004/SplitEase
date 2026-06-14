@@ -1,57 +1,24 @@
 import { Pool } from 'pg'
-import sqlite3 from 'sqlite3'
-import path from 'path'
-import fs from 'fs'
+import dotenv from 'dotenv'
 
 const isProd = process.env.NODE_ENV === 'production'
 
 // Setup env variables if using dot env
-import dotenv from 'dotenv'
 dotenv.config()
 
 const dbUrl = process.env.DATABASE_URL
-export const isPostgres = !!dbUrl && dbUrl.startsWith('postgresql')
+export const isPostgres = true
 
-let pgPool: Pool | null = null
-let sqliteDb: sqlite3.Database | null = null
-
-if (isPostgres) {
-  console.log('Connecting to PostgreSQL database...')
-  pgPool = new Pool({
-    connectionString: dbUrl,
-    ssl: isProd ? { rejectUnauthorized: false } : false
-  })
-} else {
-  console.log('No PostgreSQL configuration found. Falling back to local SQLite database...')
-  const dbPath = path.join(__dirname, '..', 'database.sqlite')
-  sqliteDb = new sqlite3.Database(dbPath)
-}
+console.log('Connecting to PostgreSQL database...')
+const pgPool = new Pool({
+  connectionString: dbUrl,
+  ssl: isProd ? { rejectUnauthorized: false } : false
+})
 
 // Unified query wrapper supporting async/await
 export const query = async (sql: string, params: any[] = []): Promise<any> => {
-  if (isPostgres && pgPool) {
-    const res = await pgPool.query(sql, params)
-    return res.rows
-  } else if (sqliteDb) {
-    return new Promise((resolve, reject) => {
-      // Convert $1, $2, $3... placeholders to sqlite ? placeholders
-      const sqliteSql = sql.replace(/\$\d+/g, '?')
-      
-      const isSelect = sql.trim().toLowerCase().startsWith('select')
-      if (isSelect) {
-        sqliteDb!.all(sqliteSql, params, (err, rows) => {
-          if (err) reject(err)
-          else resolve(rows)
-        })
-      } else {
-        sqliteDb!.run(sqliteSql, params, function (err) {
-          if (err) reject(err)
-          else resolve({ lastID: this.lastID, changes: this.changes })
-        })
-      }
-    })
-  }
-  throw new Error('Database not initialized')
+  const res = await pgPool.query(sql, params)
+  return res.rows
 }
 
 // Initialize tables on startup
@@ -71,31 +38,17 @@ export const initDb = async () => {
   `)
 
   // 2. Create Groups Table
-  if (isPostgres) {
-    await query(`
-      CREATE TABLE IF NOT EXISTS groups (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        members TEXT[] NOT NULL,
-        icon VARCHAR(100),
-        description TEXT,
-        owner_uid VARCHAR(255) REFERENCES users(uid),
-        currency VARCHAR(10)
-      )
-    `)
-  } else {
-    await query(`
-      CREATE TABLE IF NOT EXISTS groups (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        members TEXT NOT NULL, -- JSON string serialized string list
-        icon VARCHAR(100),
-        description TEXT,
-        owner_uid VARCHAR(255) REFERENCES users(uid),
-        currency VARCHAR(10)
-      )
-    `)
-  }
+  await query(`
+    CREATE TABLE IF NOT EXISTS groups (
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      members TEXT[] NOT NULL,
+      icon VARCHAR(100),
+      description TEXT,
+      owner_uid VARCHAR(255) REFERENCES users(uid),
+      currency VARCHAR(10)
+    )
+  `)
 
   // 3. Create Expenses Table
   await query(`
@@ -115,7 +68,7 @@ export const initDb = async () => {
     )
   `)
 
-  // Try to alter expenses table if it already exists (for existing SQLite databases)
+  // Try to alter expenses table if it already exists (for existing databases)
   try { await query(`ALTER TABLE expenses ADD COLUMN currency VARCHAR(10) DEFAULT 'USD'`) } catch (e) {}
   try { await query(`ALTER TABLE expenses ADD COLUMN exchange_rate NUMERIC(12, 6) DEFAULT 1.0`) } catch (e) {}
   try { await query(`ALTER TABLE expenses ADD COLUMN is_anomaly BOOLEAN DEFAULT FALSE`) } catch (e) {}
@@ -157,6 +110,7 @@ export const initDb = async () => {
       date VARCHAR(50)
     )
   `)
+
   // 7. Create Expense Splits Table
   await query(`
     CREATE TABLE IF NOT EXISTS expense_splits (
