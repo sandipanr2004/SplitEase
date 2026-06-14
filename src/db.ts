@@ -77,7 +77,7 @@ const getHeaders = async () => {
 
 export const saveUserProfile = async (uid: string, profile: Partial<UserProfile>): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/auth/register-profile', {
+  const res = await fetch(`${BASE_URL}/api/auth/register-profile`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ uid, ...profile })
@@ -89,7 +89,7 @@ export const saveUserProfile = async (uid: string, profile: Partial<UserProfile>
 
 export const getUserProfile = async (_uid: string): Promise<UserProfile | null> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/users/profile', { headers })
+  const res = await fetch(`${BASE_URL}/api/users/profile`, { headers })
   if (res.status === 404) return null
   if (!res.ok) {
     throw new Error('Failed to fetch user profile from backend')
@@ -99,7 +99,7 @@ export const getUserProfile = async (_uid: string): Promise<UserProfile | null> 
 
 export const saveGroup = async (group: GroupWorkspace): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/groups', {
+  const res = await fetch(`${BASE_URL}/api/groups`, {
     method: 'POST',
     headers,
     body: JSON.stringify(group)
@@ -111,7 +111,7 @@ export const saveGroup = async (group: GroupWorkspace): Promise<void> => {
 
 export const getGroups = async (_uid: string): Promise<GroupWorkspace[]> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/groups', { headers })
+  const res = await fetch(`${BASE_URL}/api/groups`, { headers })
   if (!res.ok) {
     throw new Error('Failed to fetch user groups from backend')
   }
@@ -120,7 +120,7 @@ export const getGroups = async (_uid: string): Promise<GroupWorkspace[]> => {
 
 export const saveExpense = async (expense: ExpenseItem): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/expenses', {
+  const res = await fetch(`${BASE_URL}/api/expenses`, {
     method: 'POST',
     headers,
     body: JSON.stringify(expense)
@@ -165,7 +165,7 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
 
 export const uploadBulkExpenses = async (groupId: string, expenses: ExpenseItem[], report?: any, anomalies?: any[]): Promise<number> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/expenses/bulk', {
+  const res = await fetch(`${BASE_URL}/api/expenses/bulk`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ groupId, expenses, report, anomalies })
@@ -204,7 +204,7 @@ export const getAuditLogs = async (groupId: string): Promise<AuditLog[]> => {
 
 export const recordSettlement = async (settlement: Partial<Settlement>): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`${BASE_URL}/api/settlements', {
+  const res = await fetch(`${BASE_URL}/api/settlements`, {
     method: 'POST',
     headers,
     body: JSON.stringify(settlement)
