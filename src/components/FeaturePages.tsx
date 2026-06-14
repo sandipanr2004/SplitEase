@@ -62,7 +62,7 @@ const getSimilarity = (s1: string, s2: string) => {
 };
 
 export const FeatureCsvImport = ({ onBack, onViewHistory, groups, activeGroupId, onSuccess }: { onBack: () => void, onViewHistory?: () => void, groups?: any[], activeGroupId?: string, onSuccess?: (route?: string) => void }) => {
-  const [selectedGroupId, setSelectedGroupId] = useState(activeGroupId || (groups?.[0]?.id ?? '1'));
+  const [selectedGroupId, setSelectedGroupId] = useState(activeGroupId || (groups?.[0]?.id ?? ''));
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<any[]>([]);
@@ -340,14 +340,16 @@ export const FeatureCsvImport = ({ onBack, onViewHistory, groups, activeGroupId,
   };
 
   const downloadSample = () => {
-    const csvContent = "data:text/csv;charset=utf-8,description,amount,paidBy,date,category,currency\nTeam Lunch,45.50,Alice,2026-06-01,Food,USD\nUber to Airport,25.00,Bob,2026-06-02,Transport,USD";
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = "description,amount,paidBy,date,category,currency\nTeam Lunch,45.50,Alice,2026-06-01,Food,USD\nUber to Airport,25.00,Bob,2026-06-02,Transport,USD";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", "splitease_sample.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const downloadReport = () => {
@@ -356,17 +358,17 @@ export const FeatureCsvImport = ({ onBack, onViewHistory, groups, activeGroupId,
     const headers = ['Row Number', 'Issue Detected', 'Action Taken', 'Final Status'];
     const rows = importReport.map(r => [r.rowNumber, r.issueDetected, r.actionTaken, r.finalStatus]);
     
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + headers.join(',') + '\n' 
-      + rows.map(e => e.join(',')).join('\n');
+    const csvContent = headers.join(',') + '\n' + rows.map(e => e.join(',')).join('\n');
       
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", "splitease_import_report.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -696,13 +698,17 @@ export const FeatureCsvImport = ({ onBack, onViewHistory, groups, activeGroupId,
             )}
 
             {file && (
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-2">
                 <button 
                   onClick={validateCsv}
-                  className="bg-black hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all"
+                  disabled={!selectedGroupId}
+                  className="bg-black disabled:bg-gray-400 hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all"
                 >
                   Validate CSV Data
                 </button>
+                {!selectedGroupId && (
+                  <span className="text-red-500 text-sm font-medium">Please select or create a group first.</span>
+                )}
               </div>
             )}
           </>
