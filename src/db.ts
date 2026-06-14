@@ -1,5 +1,7 @@
 import { auth, isMockMode } from './firebase'
 
+const BASE_URL = import.meta.env.VITE_API_URL || ''
+
 export interface UserProfile {
   uid: string
   firstName: string
@@ -75,7 +77,7 @@ const getHeaders = async () => {
 
 export const saveUserProfile = async (uid: string, profile: Partial<UserProfile>): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/auth/register-profile', {
+  const res = await fetch(`${BASE_URL}/api/auth/register-profile', {
     method: 'POST',
     headers,
     body: JSON.stringify({ uid, ...profile })
@@ -87,7 +89,7 @@ export const saveUserProfile = async (uid: string, profile: Partial<UserProfile>
 
 export const getUserProfile = async (_uid: string): Promise<UserProfile | null> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/users/profile', { headers })
+  const res = await fetch(`${BASE_URL}/api/users/profile', { headers })
   if (res.status === 404) return null
   if (!res.ok) {
     throw new Error('Failed to fetch user profile from backend')
@@ -97,7 +99,7 @@ export const getUserProfile = async (_uid: string): Promise<UserProfile | null> 
 
 export const saveGroup = async (group: GroupWorkspace): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/groups', {
+  const res = await fetch(`${BASE_URL}/api/groups', {
     method: 'POST',
     headers,
     body: JSON.stringify(group)
@@ -109,7 +111,7 @@ export const saveGroup = async (group: GroupWorkspace): Promise<void> => {
 
 export const getGroups = async (_uid: string): Promise<GroupWorkspace[]> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/groups', { headers })
+  const res = await fetch(`${BASE_URL}/api/groups', { headers })
   if (!res.ok) {
     throw new Error('Failed to fetch user groups from backend')
   }
@@ -118,7 +120,7 @@ export const getGroups = async (_uid: string): Promise<GroupWorkspace[]> => {
 
 export const saveExpense = async (expense: ExpenseItem): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/expenses', {
+  const res = await fetch(`${BASE_URL}/api/expenses', {
     method: 'POST',
     headers,
     body: JSON.stringify(expense)
@@ -130,7 +132,7 @@ export const saveExpense = async (expense: ExpenseItem): Promise<void> => {
 
 export const getExpenses = async (groupId: string): Promise<ExpenseItem[]> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/expenses?groupId=${groupId}`, { headers })
+  const res = await fetch(`${BASE_URL}/api/expenses?groupId=${groupId}`, { headers })
   if (!res.ok) {
     throw new Error('Failed to fetch group expenses from backend')
   }
@@ -139,7 +141,7 @@ export const getExpenses = async (groupId: string): Promise<ExpenseItem[]> => {
 
 export const deleteExpense = async (expenseId: string): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/expenses/${expenseId}`, {
+  const res = await fetch(`${BASE_URL}/api/expenses/${expenseId}`, {
     method: 'DELETE',
     headers
   })
@@ -150,7 +152,7 @@ export const deleteExpense = async (expenseId: string): Promise<void> => {
 
 export const deleteGroup = async (groupId: string): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/groups/${groupId}`, {
+  const res = await fetch(`${BASE_URL}/api/groups/${groupId}`, {
     method: 'DELETE',
     headers
   })
@@ -163,7 +165,7 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
 
 export const uploadBulkExpenses = async (groupId: string, expenses: ExpenseItem[], report?: any, anomalies?: any[]): Promise<number> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/expenses/bulk', {
+  const res = await fetch(`${BASE_URL}/api/expenses/bulk', {
     method: 'POST',
     headers,
     body: JSON.stringify({ groupId, expenses, report, anomalies })
@@ -184,7 +186,7 @@ export const uploadBulkExpenses = async (groupId: string, expenses: ExpenseItem[
 
 export const getImportHistory = async (groupId: string): Promise<any[]> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/imports?groupId=${groupId}`, { headers })
+  const res = await fetch(`${BASE_URL}/api/imports?groupId=${groupId}`, { headers })
   if (!res.ok) {
     throw new Error('Failed to fetch import history')
   }
@@ -193,7 +195,7 @@ export const getImportHistory = async (groupId: string): Promise<any[]> => {
 
 export const getAuditLogs = async (groupId: string): Promise<AuditLog[]> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/groups/${groupId}/audit-logs`, { headers })
+  const res = await fetch(`${BASE_URL}/api/groups/${groupId}/audit-logs`, { headers })
   if (!res.ok) {
     throw new Error('Failed to fetch audit logs')
   }
@@ -202,7 +204,7 @@ export const getAuditLogs = async (groupId: string): Promise<AuditLog[]> => {
 
 export const recordSettlement = async (settlement: Partial<Settlement>): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch('/api/settlements', {
+  const res = await fetch(`${BASE_URL}/api/settlements', {
     method: 'POST',
     headers,
     body: JSON.stringify(settlement)
@@ -214,7 +216,7 @@ export const recordSettlement = async (settlement: Partial<Settlement>): Promise
 
 export const getSettlements = async (groupId: string): Promise<Settlement[]> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/settlements?groupId=${groupId}`, { headers })
+  const res = await fetch(`${BASE_URL}/api/settlements?groupId=${groupId}`, { headers })
   if (!res.ok) {
     throw new Error('Failed to fetch settlements')
   }
@@ -223,7 +225,7 @@ export const getSettlements = async (groupId: string): Promise<Settlement[]> => 
 
 export const updateMemberTimeline = async (groupId: string, userUid: string, joinedAt: string, leftAt: string | null): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/groups/${groupId}/members`, {
+  const res = await fetch(`${BASE_URL}/api/groups/${groupId}/members`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ userUid, joinedAt, leftAt })
@@ -235,14 +237,14 @@ export const updateMemberTimeline = async (groupId: string, userUid: string, joi
 
 export const getAnomalyDashboardData = async (groupId: string): Promise<any> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/anomalies/dashboard?groupId=${groupId}`, { headers })
+  const res = await fetch(`${BASE_URL}/api/anomalies/dashboard?groupId=${groupId}`, { headers })
   if (!res.ok) throw new Error('Failed to fetch anomaly dashboard data')
   return res.json()
 }
 
 export const resolveAnomaly = async (anomalyId: string, action: string): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/anomalies/resolve`, {
+  const res = await fetch(`${BASE_URL}/api/anomalies/resolve`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ anomalyId, action })
@@ -254,14 +256,14 @@ export const resolveAnomaly = async (anomalyId: string, action: string): Promise
 
 export const getGroupTimelineData = async (groupId: string): Promise<any> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/groups/${groupId}/timeline`, { headers })
+  const res = await fetch(`${BASE_URL}/api/groups/${groupId}/timeline`, { headers })
   if (!res.ok) throw new Error('Failed to fetch timeline data')
   return res.json()
 }
 
 export const resolveTimelineConflict = async (groupId: string, splitId: string, expenseId: string, action: string): Promise<void> => {
   const headers = await getHeaders()
-  const res = await fetch(`/api/groups/${groupId}/timeline/resolve`, {
+  const res = await fetch(`${BASE_URL}/api/groups/${groupId}/timeline/resolve`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ splitId, expenseId, action })
